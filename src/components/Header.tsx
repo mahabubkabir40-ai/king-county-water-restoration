@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, MapPin, Menu, Phone, ShieldCheck, X } from "lucide-react";
 import {
   LOCATIONS,
@@ -10,10 +11,87 @@ import {
   isLocationPageLive,
 } from "@/lib/site-config";
 
+type DesktopMenuKey = "services" | "areas" | null;
+
 export function Header() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
+  const [activeDesktopMenu, setActiveDesktopMenu] =
+    useState<DesktopMenuKey>(null);
+
+  const desktopNavRef = useRef<HTMLElement | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const closeAllMenus = useCallback(() => {
+    clearCloseTimer();
+    setActiveDesktopMenu(null);
+    setMobileOpen(false);
+    setServicesOpen(false);
+    setAreasOpen(false);
+    if (
+      typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement
+    ) {
+      document.activeElement.blur();
+    }
+  }, [clearCloseTimer]);
+
+  const openDesktopMenu = useCallback(
+    (menu: Exclude<DesktopMenuKey, null>) => {
+      clearCloseTimer();
+      setActiveDesktopMenu(menu);
+    },
+    [clearCloseTimer]
+  );
+
+  const scheduleDesktopClose = useCallback(() => {
+    clearCloseTimer();
+    closeTimerRef.current = setTimeout(() => {
+      setActiveDesktopMenu(null);
+    }, 100);
+  }, [clearCloseTimer]);
+
+  // Close menus whenever route changes (link click, back/forward navigation)
+  useEffect(() => {
+    closeAllMenus();
+  }, [pathname, closeAllMenus]);
+
+  // Close menus on outside click or Escape key
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        desktopNavRef.current &&
+        !desktopNavRef.current.contains(event.target as Node)
+      ) {
+        clearCloseTimer();
+        setActiveDesktopMenu(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeAllMenus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      clearCloseTimer();
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [clearCloseTimer, closeAllMenus]);
 
   const liveLocations = LOCATIONS.filter((l) => isLocationPageLive(l.slug));
   const liveByCorridor = Array.from(
@@ -52,7 +130,7 @@ export function Header() {
             <Link
               href="/"
               className="flex items-center gap-2 sm:gap-2.5 group shrink-0"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeAllMenus}
             >
               <img
                 src="/images/logo.svg"
@@ -72,26 +150,57 @@ export function Header() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-700">
-              <Link href="/" className="hover:text-navy-900 transition-colors">
+            <nav
+              ref={desktopNavRef}
+              className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-700"
+            >
+              <Link
+                href="/"
+                onClick={closeAllMenus}
+                className="hover:text-navy-900 transition-colors"
+              >
                 Home
               </Link>
 
               {/* Services Dropdown */}
-              <div className="relative group">
+              <div
+                className="relative"
+                onMouseEnter={() => openDesktopMenu("services")}
+                onMouseLeave={scheduleDesktopClose}
+              >
                 <button
                   type="button"
+                  aria-expanded={activeDesktopMenu === "services"}
+                  aria-haspopup="menu"
+                  onClick={() =>
+                    setActiveDesktopMenu((prev) =>
+                      prev === "services" ? null : "services"
+                    )
+                  }
                   className="inline-flex items-center gap-1 hover:text-navy-900 py-2 transition-colors"
                 >
                   Water Services
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-hover:rotate-180 transition-transform" />
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-500 transition-transform ${
+                      activeDesktopMenu === "services" ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
-                <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 transition-all duration-150 absolute left-0 top-full pt-2 w-80">
+                <div
+                  role="menu"
+                  className={`${
+                    activeDesktopMenu === "services"
+                      ? "block"
+                      : "hidden"
+                  } absolute left-0 top-full pt-2 w-80 z-50`}
+                >
                   <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-2">
                     {SERVICES.map((svc) => (
                       <Link
                         key={svc.slug}
                         href={`/services/${svc.slug}`}
+                        role="menuitem"
+                        onClick={closeAllMenus}
                         className="block rounded-lg px-3.5 py-2.5 hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex items-center justify-between gap-2">
@@ -112,15 +221,37 @@ export function Header() {
               </div>
 
               {/* Service Areas Dropdown */}
-              <div className="relative group">
+              <div
+                className="relative"
+                onMouseEnter={() => openDesktopMenu("areas")}
+                onMouseLeave={scheduleDesktopClose}
+              >
                 <button
                   type="button"
+                  aria-expanded={activeDesktopMenu === "areas"}
+                  aria-haspopup="menu"
+                  onClick={() =>
+                    setActiveDesktopMenu((prev) =>
+                      prev === "areas" ? null : "areas"
+                    )
+                  }
                   className="inline-flex items-center gap-1 hover:text-navy-900 py-2 transition-colors"
                 >
                   Service Areas
-                  <ChevronDown className="w-4 h-4 text-slate-500 group-hover:rotate-180 transition-transform" />
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-500 transition-transform ${
+                      activeDesktopMenu === "areas" ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
-                <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 transition-all duration-150 absolute left-0 top-full pt-2 w-80">
+                <div
+                  role="menu"
+                  className={`${
+                    activeDesktopMenu === "areas"
+                      ? "block"
+                      : "hidden"
+                  } absolute left-0 top-full pt-2 w-80 z-50`}
+                >
                   <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 space-y-3 max-h-[75vh] overflow-y-auto">
                     {liveByCorridor.map((group) => (
                       <div key={group.corridor}>
@@ -133,6 +264,8 @@ export function Header() {
                             <Link
                               key={loc.slug}
                               href={`/locations/${loc.slug}`}
+                              role="menuitem"
+                              onClick={closeAllMenus}
                               className="flex items-center justify-between rounded-lg px-2.5 py-1.5 text-sm font-medium text-navy-900 hover:bg-slate-50 transition-colors"
                             >
                               <span>{loc.displayName}</span>
@@ -147,6 +280,8 @@ export function Header() {
                     <div className="border-t border-slate-100 pt-2">
                       <Link
                         href="/#areas-served"
+                        role="menuitem"
+                        onClick={closeAllMenus}
                         className="block rounded-lg px-2.5 py-2 text-xs font-bold text-sky-700 hover:bg-sky-50 transition-colors"
                       >
                         View All King County Areas &amp; ZIP Checker &rarr;
@@ -157,14 +292,23 @@ export function Header() {
               </div>
               <Link
                 href="/insurance-claims"
+                onClick={closeAllMenus}
                 className="hover:text-navy-900 transition-colors"
               >
                 Insurance Guide
               </Link>
-              <Link href="/about" className="hover:text-navy-900 transition-colors">
+              <Link
+                href="/about"
+                onClick={closeAllMenus}
+                className="hover:text-navy-900 transition-colors"
+              >
                 About
               </Link>
-              <Link href="/contact" className="hover:text-navy-900 transition-colors">
+              <Link
+                href="/contact"
+                onClick={closeAllMenus}
+                className="hover:text-navy-900 transition-colors"
+              >
                 Contact
               </Link>
             </nav>
@@ -186,7 +330,13 @@ export function Header() {
                 type="button"
                 aria-label="Toggle navigation menu"
                 aria-expanded={mobileOpen}
-                onClick={() => setMobileOpen((prev) => !prev)}
+                onClick={() => {
+                  if (mobileOpen) {
+                    closeAllMenus();
+                  } else {
+                    setMobileOpen(true);
+                  }
+                }}
                 className="lg:hidden inline-flex items-center justify-center p-2 sm:p-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 shrink-0"
               >
                 {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -201,7 +351,7 @@ export function Header() {
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-2 text-sm font-semibold text-slate-800">
               <Link
                 href="/"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeAllMenus}
                 className="block px-3 py-2 rounded-lg hover:bg-slate-50"
               >
                 Home
@@ -210,6 +360,7 @@ export function Header() {
               <div>
                 <button
                   type="button"
+                  aria-expanded={servicesOpen}
                   onClick={() => setServicesOpen((prev) => !prev)}
                   className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50"
                 >
@@ -226,7 +377,7 @@ export function Header() {
                       <Link
                         key={svc.slug}
                         href={`/services/${svc.slug}`}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={closeAllMenus}
                         className="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50"
                       >
                         {svc.shortTitle}
@@ -239,6 +390,7 @@ export function Header() {
               <div>
                 <button
                   type="button"
+                  aria-expanded={areasOpen}
                   onClick={() => setAreasOpen((prev) => !prev)}
                   className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50"
                 >
@@ -255,7 +407,7 @@ export function Header() {
                       <Link
                         key={loc.slug}
                         href={`/locations/${loc.slug}`}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={closeAllMenus}
                         className="block px-3 py-1.5 rounded-lg text-slate-700 hover:bg-slate-50"
                       >
                         {loc.displayName}
@@ -263,7 +415,7 @@ export function Header() {
                     ))}
                     <Link
                       href="/#areas-served"
-                      onClick={() => setMobileOpen(false)}
+                      onClick={closeAllMenus}
                       className="block px-3 py-1.5 rounded-lg text-sky-700 font-semibold hover:bg-sky-50"
                     >
                       All King County Areas &rarr;
@@ -273,21 +425,21 @@ export function Header() {
               </div>
               <Link
                 href="/insurance-claims"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeAllMenus}
                 className="block px-3 py-2 rounded-lg hover:bg-slate-50"
               >
                 Insurance Guide
               </Link>
               <Link
                 href="/about"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeAllMenus}
                 className="block px-3 py-2 rounded-lg hover:bg-slate-50"
               >
                 About
               </Link>
               <Link
                 href="/contact"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeAllMenus}
                 className="block px-3 py-2 rounded-lg hover:bg-slate-50"
               >
                 Contact &amp; ZIP Checker
