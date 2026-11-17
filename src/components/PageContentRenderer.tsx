@@ -433,6 +433,7 @@ export function PageContentRenderer({
         "@type": "Organization",
         name: SITE_CONFIG.brandName,
         url: SITE_CONFIG.domain,
+        logo: `${SITE_CONFIG.domain}/images/logo.png`,
         telephone: SITE_CONFIG.phoneE164,
         areaServed: {
           "@type": "AdministrativeArea",

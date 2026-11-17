@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Droplets, MapPin, Menu, Phone, ShieldCheck, X } from "lucide-react";
+import { ChevronDown, MapPin, Menu, Phone, ShieldCheck, X } from "lucide-react";
 import {
   LOCATIONS,
   SERVICES,
@@ -54,9 +54,13 @@ export function Header() {
               className="flex items-center gap-2 sm:gap-2.5 group shrink-0"
               onClick={() => setMobileOpen(false)}
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-navy-900 text-white flex items-center justify-center shadow-sm group-hover:bg-emergency-600 transition-colors shrink-0">
-                <Droplets className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
+              <img
+                src="/images/logo.svg"
+                alt="King County Water Restoration logo"
+                width={40}
+                height={40}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0 shadow-sm"
+              />
               <div className="leading-tight whitespace-nowrap">
                 <div className="font-bold text-navy-900 text-sm sm:text-lg tracking-tight">
                   King County

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="King County Water Restoration logo">
+  <defs>
+    <linearGradient id="kcBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#08101E"/>
+    </linearGradient>
+    <linearGradient id="kcDrop" x1="25%" y1="10%" x2="80%" y2="95%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#kcBg)" stroke="#38BDF8" stroke-opacity="0.45" stroke-width="2"/>
+  <path d="M13 29.5 L32 13.5 L51 29.5" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 23.5 C32 23.5 22.5 34.2 22.5 40.8 C22.5 46.1 26.8 50.2 32 50.2 C37.2 50.2 41.5 46.1 41.5 40.8 C41.5 34.2 32 23.5 32 23.5 Z" fill="url(#kcDrop)"/>
+  <path d="M27.6 39.2 C27.2 41.5 28.1 43.9 29.8 45.2" fill="none" stroke="#E0F2FE" stroke-width="2.2" stroke-linecap="round"/>
+  <rect x="19" y="53.5" width="26" height="3.2" rx="1.6" fill="#F97316"/>
+</svg>

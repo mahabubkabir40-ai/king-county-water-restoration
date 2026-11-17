@@ -19,10 +19,28 @@ export const metadata: Metadata = {
   },
   description:
     "Water in your home? Call (425) 675-3040 24/7 to reach a local water damage restoration company serving King County suburbs: extraction, drying, crawl spaces, sewage.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     type: "website",
     siteName: SITE_CONFIG.brandName,
     locale: "en_US",
+    images: [
+      {
+        url: "/images/logo.png",
+        width: 512,
+        height: 512,
+        alt: "King County Water Restoration logo",
+      },
+    ],
   },
 };
 

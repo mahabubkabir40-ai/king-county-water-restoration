@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Droplets, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { MapPin, Phone, ShieldCheck } from "lucide-react";
 import {
   LOCATIONS,
   SERVICES,
@@ -30,9 +30,13 @@ export function Footer() {
           {/* Column 1: Brand & Call */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center">
-                <Droplets className="w-5 h-5" />
-              </div>
+              <img
+                src="/images/logo.svg"
+                alt="King County Water Restoration logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-xl shrink-0"
+              />
               <div className="leading-tight">
                 <div className="font-bold text-white text-base">
                   King County Water Restoration
