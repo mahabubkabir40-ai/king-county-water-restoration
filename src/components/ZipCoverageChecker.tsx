@@ -9,14 +9,6 @@ import {
   isLocationPageLive,
 } from "@/lib/site-config";
 
-const SAMPLE_ZIPS = [
-  { zip: "98019", label: "98019 Duvall" },
-  { zip: "98038", label: "98038 Maple Valley" },
-  { zip: "98022", label: "98022 Enumclaw" },
-  { zip: "98045", label: "98045 North Bend" },
-  { zip: "98065", label: "98065 Snoqualmie" },
-];
-
 interface ZipCoverageCheckerProps {
   variant?: "dark" | "light";
   id?: string;
@@ -38,11 +30,6 @@ export function ZipCoverageChecker({
     if (cleanZip.length === 5) {
       setCheckedZip(cleanZip);
     }
-  };
-
-  const handleSampleClick = (zip: string) => {
-    setInputZip(zip);
-    setCheckedZip(zip);
   };
 
   const isDark = variant === "dark";
@@ -112,31 +99,6 @@ export function ZipCoverageChecker({
           Check ZIP
         </button>
       </form>
-
-      {/* Sample ZIP Pills */}
-      <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        <span
-          className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} mr-1`}
-        >
-          Try:
-        </span>
-        {SAMPLE_ZIPS.map((item) => (
-          <button
-            key={item.zip}
-            type="button"
-            onClick={() => handleSampleClick(item.zip)}
-            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-              checkedZip === item.zip
-                ? "bg-sky-600 text-white border-sky-600"
-                : isDark
-                ? "bg-slate-800/80 text-slate-300 border-slate-700 hover:border-sky-400 hover:text-white"
-                : "bg-slate-100 text-slate-700 border-slate-200 hover:border-sky-500 hover:text-navy-900"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
 
       {/* Coverage Result */}
       {checkedZip && checkedZip.length === 5 && (
